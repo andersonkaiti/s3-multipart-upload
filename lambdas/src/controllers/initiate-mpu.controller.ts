@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto'
 import { extname } from 'node:path'
 import type { IHttpRequest } from '@app-types/http.ts'
-import { CreateMultipartUploadCommand } from '@aws-sdk/client-s3'
+import {
+  CreateMultipartUploadCommand,
+  UploadPartCommand,
+} from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { s3Client } from '@clients/s3.client.ts'
 import { env } from '@config/env.ts'
 import { response } from '@utils/response.ts'
@@ -14,6 +18,7 @@ const initiateMPUSchema = z.object({
       (value) => extname(value).length > 0,
       'The filename must have an extension',
     ),
+  totalChunks: z.number(),
 })
 
 export class InitiateMPUController {
@@ -29,11 +34,13 @@ export class InitiateMPUController {
       })
     }
 
-    const { filename } = data
+    const { filename, totalChunks } = data
+
+    const key = `${randomUUID()}${filename}`
 
     const createMPUCommand = new CreateMultipartUploadCommand({
       Bucket: env.BUCKET_NAME,
-      Key: `${randomUUID()}${filename}`,
+      Key: key,
     })
 
     const { UploadId: uploadId } = await s3Client.send(createMPUCommand)
@@ -47,10 +54,37 @@ export class InitiateMPUController {
       })
     }
 
+    const signedURLPromises = []
+
+    for (let partNumber = 1; partNumber <= totalChunks; partNumber++) {
+      const uploadPartCommand = new UploadPartCommand({
+        Bucket: env.BUCKET_NAME,
+        Key: key,
+        UploadId: uploadId,
+        PartNumber: 1,
+      })
+
+      const ONE_MINUTE = 60
+      const ONE_HOUR = 60 * ONE_MINUTE
+
+      signedURLPromises.push(
+        getSignedUrl(s3Client, uploadPartCommand, {
+          expiresIn: ONE_HOUR,
+        }),
+      )
+    }
+
+    const urls = await Promise.all(signedURLPromises)
+
     return response({
-      statusCode: 200,
+      statusCode: 201,
       body: {
+        key,
         uploadId,
+        urls: urls.map((url, index) => ({
+          url,
+          partNumber: index + 1,
+        })),
       },
     })
   }
