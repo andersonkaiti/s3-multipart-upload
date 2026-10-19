@@ -4,6 +4,15 @@ provider:
   name: aws
   runtime: nodejs24.x
   architecture: arm64
+  environment:
+    BUCKET_NAME: !Ref Bucket
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 's3:putObject'
+          Resource: !Sub '${Bucket.Arn}/*'
 
 package:
   individually: true
@@ -14,9 +23,16 @@ build:
     sourcemap: false
 
 functions:
-  hello:
-    handler: src/functions/hello.handler
+  initiateMPU:
+    handler: src/functions/initiate-mpu.handler
     events:
       - httpApi:
           path: /
-          method: GET
+          method: POST
+
+resources:
+  Resources:
+    Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: anderson-s3-multipart-uploads
