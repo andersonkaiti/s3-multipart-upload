@@ -1,0 +1,11 @@
+{
+  "name": "lambdas",
+  "type": "module",
+  "license": "ISC",
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/aws-lambda": "^8.10.164",
+    "@types/node": "^24.19.2",
+    "typescript": "~6.0.3"
+  }
+}
