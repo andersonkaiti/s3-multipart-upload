@@ -27,7 +27,13 @@ functions:
     handler: src/functions/initiate-mpu.handler
     events:
       - httpApi:
-          path: /
+          path: /initiate-mpu
+          method: POST
+  completeMPU:
+    handler: src/functions/complete-mpu.handler
+    events:
+      - httpApi:
+          path: /complete-mpu
           method: POST
 
 resources:
