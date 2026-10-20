@@ -61,7 +61,7 @@ export class InitiateMPUController {
         Bucket: env.BUCKET_NAME,
         Key: key,
         UploadId: uploadId,
-        PartNumber: 1,
+        PartNumber: partNumber,
       })
 
       const ONE_MINUTE = 60
@@ -81,7 +81,7 @@ export class InitiateMPUController {
       body: {
         key,
         uploadId,
-        urls: urls.map((url, index) => ({
+        parts: urls.map((url, index) => ({
           url,
           partNumber: index + 1,
         })),
