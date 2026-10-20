@@ -16,47 +16,53 @@ export function useMultipartUpload() {
         return
       }
 
-      const ONE_KILOBYTE = 1024
-      const ONE_MEGABYTE = 1024 * ONE_KILOBYTE
+      try {
+        const ONE_KILOBYTE = 1024
+        const ONE_MEGABYTE = 1024 * ONE_KILOBYTE
 
-      const chunkSize = 5 * ONE_MEGABYTE
-      const totalChunks = Math.ceil(file.size / chunkSize)
+        const chunkSize = 5 * ONE_MEGABYTE
+        const totalChunks = Math.ceil(file.size / chunkSize)
 
-      const {
-        data: { key: fileKey, uploadId, parts },
-      } = await initiateMPU({
-        filename: file.name,
-        totalChunks,
-      })
+        const {
+          data: { key: fileKey, uploadId, parts },
+        } = await initiateMPU({
+          filename: file.name,
+          totalChunks,
+        })
 
-      const uploadedParts = await Promise.all(
-        parts.map(async ({ url, partNumber }, index) => {
-          const chunkStart = index * chunkSize
-          const chunkEnd = Math.min(chunkStart + chunkSize, file.size)
+        const uploadedParts = await Promise.all(
+          parts.map(async ({ url, partNumber }, index) => {
+            const chunkStart = index * chunkSize
+            const chunkEnd = Math.min(chunkStart + chunkSize, file.size)
 
-          const fileChunk = file.slice(chunkStart, chunkEnd)
+            const fileChunk = file.slice(chunkStart, chunkEnd)
 
-          const { entityTag } = await uploadChunk({
-            url,
-            fileChunk,
-          })
+            const { entityTag } = await uploadChunk({
+              url,
+              fileChunk,
+            })
 
-          return {
-            partNumber,
-            entityTag,
-          }
-        }),
-      )
+            return {
+              partNumber,
+              entityTag,
+            }
+          }),
+        )
 
-      await completeMPU({
-        fileKey,
-        parts: uploadedParts,
-        uploadId,
-      })
+        await completeMPU({
+          fileKey,
+          parts: uploadedParts,
+          uploadId,
+        })
 
-      toast.add({
-        title: 'Upload!',
-      })
+        toast.add({
+          title: 'Upload!',
+        })
+      } catch {
+        toast.add({
+          title: 'Erro ao enviar o arquivo. Tente novamente.',
+        })
+      }
     })
   }
 
