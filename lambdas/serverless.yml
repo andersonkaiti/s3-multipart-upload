@@ -14,6 +14,7 @@ provider:
         - Effect: 'Allow'
           Action:
             - 's3:putObject'
+            - 's3:AbortMultipartUpload'
           Resource: !Sub '${Bucket.Arn}/*'
         - Effect: 'Allow'
           Action:
@@ -47,6 +48,12 @@ functions:
       - httpApi:
           path: /list-pending-mpus
           method: GET
+  abortMPU:
+    handler: src/functions/abort-mpu.handler
+    events:
+      - httpApi:
+          path: /abort-mpu
+          method: DELETE
 
 resources:
   Resources:
