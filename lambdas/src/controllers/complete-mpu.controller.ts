@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 const completeMPUSchema = z.object({
   fileKey: z.string(),
-  uploadId: z.uuid(),
+  uploadId: z.string(),
   parts: z.array(
     z.object({
       partNumber: z.number(),

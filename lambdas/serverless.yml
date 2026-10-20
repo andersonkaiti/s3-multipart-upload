@@ -4,6 +4,8 @@ provider:
   name: aws
   runtime: nodejs24.x
   architecture: arm64
+  httpApi:
+    cors: true
   environment:
     BUCKET_NAME: !Ref Bucket
   iam:
@@ -42,3 +44,13 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: anderson-s3-multipart-uploads
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins:
+                - "*"
+              AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - PUT
+              ExposedHeaders:
+                - ETag
