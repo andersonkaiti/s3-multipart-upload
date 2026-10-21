@@ -77,3 +77,9 @@ resources:
                 - PUT
               ExposedHeaders:
                 - ETag
+        LifecycleConfiguration:
+          Rules:
+            - Id: abort-pending-mpus
+              Status: Enabled
+              AbortIncompleteMultipartUpload:
+                DaysAfterInitiation: 1

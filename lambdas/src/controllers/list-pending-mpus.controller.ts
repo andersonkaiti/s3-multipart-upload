@@ -9,7 +9,7 @@ export class ListPendingMPUsController {
       Bucket: env.BUCKET_NAME,
     })
 
-    const { Uploads: uploads } = await s3Client.send(command)
+    const { Uploads: uploads = [] } = await s3Client.send(command)
 
     return response({
       statusCode: 200,
