@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 const abortMPUSchema = z.object({
   uploadId: z.string(),
-  key: z.string(),
+  fileKey: z.string(),
 })
 
 export class AbortMPUController {
@@ -23,12 +23,12 @@ export class AbortMPUController {
       })
     }
 
-    const { uploadId, key } = data
+    const { uploadId, fileKey } = data
 
     const command = new AbortMultipartUploadCommand({
       Bucket: env.BUCKET_NAME,
       UploadId: uploadId,
-      Key: key,
+      Key: fileKey,
     })
 
     await s3Client.send(command)

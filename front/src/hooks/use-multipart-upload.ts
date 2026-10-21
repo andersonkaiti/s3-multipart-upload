@@ -1,4 +1,5 @@
 import { toast } from '@components/ui/toast'
+import { abortMPU } from '@http/abort-mpu'
 import { completeMPU } from '@http/complete-mpu'
 import { initiateMPU } from '@http/initiate-mpu'
 import { uploadChunk } from '@http/upload-chunk'
@@ -16,20 +17,20 @@ export function useMultipartUpload() {
         return
       }
 
+      const ONE_KILOBYTE = 1024
+      const ONE_MEGABYTE = 1024 * ONE_KILOBYTE
+
+      const chunkSize = 5 * ONE_MEGABYTE
+      const totalChunks = Math.ceil(file.size / chunkSize)
+
+      const {
+        data: { key: fileKey, uploadId, parts },
+      } = await initiateMPU({
+        filename: file.name,
+        totalChunks,
+      })
+
       try {
-        const ONE_KILOBYTE = 1024
-        const ONE_MEGABYTE = 1024 * ONE_KILOBYTE
-
-        const chunkSize = 5 * ONE_MEGABYTE
-        const totalChunks = Math.ceil(file.size / chunkSize)
-
-        const {
-          data: { key: fileKey, uploadId, parts },
-        } = await initiateMPU({
-          filename: file.name,
-          totalChunks,
-        })
-
         const uploadedParts = await Promise.all(
           parts.map(async ({ url, partNumber }, index) => {
             const chunkStart = index * chunkSize
@@ -59,8 +60,14 @@ export function useMultipartUpload() {
           title: 'Upload!',
         })
       } catch {
+        await abortMPU({
+          fileKey,
+          uploadId,
+        })
+
         toast.add({
           title: 'Erro ao enviar o arquivo. Tente novamente.',
+          type: 'error',
         })
       }
     })

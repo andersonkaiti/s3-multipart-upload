@@ -13,8 +13,6 @@ export async function uploadChunk({
 }: IUploadChunkParams) {
   try {
     const { headers } = await axios.put<null, { headers: { etag: string } }>(
-      // mocking 2 erros in a row
-      // [3, 2].includes(maxRetries) ? `${url}${window.crypto.randomUUID()}` : url,
       url,
       fileChunk,
     )
@@ -26,7 +24,11 @@ export async function uploadChunk({
     }
   } catch (error) {
     if (maxRetries > 0) {
-      return await uploadChunk({ url, fileChunk, maxRetries: maxRetries - 1 })
+      return await uploadChunk({
+        url,
+        fileChunk,
+        maxRetries: maxRetries - 1,
+      })
     }
 
     throw error
