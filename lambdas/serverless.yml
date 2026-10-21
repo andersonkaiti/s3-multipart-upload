@@ -54,6 +54,12 @@ functions:
       - httpApi:
           path: /abort-mpu
           method: DELETE
+  abortAllPendingMPUs:
+    handler: src/functions/abort-all-pending-mpus.handler
+    events:
+      - httpApi:
+          path: /abort-all-pending-mpus
+          method: DELETE
 
 resources:
   Resources:
